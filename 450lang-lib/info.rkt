@@ -3,7 +3,9 @@
 (define collection 'multi)
 
 (define deps
-  '(("base" #:version "8.6")))
+  '(("base" #:version "8.6")
+    "htdp-lib"
+    "rackunit-lib"))
 
 (define build-deps '())
 
