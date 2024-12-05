@@ -122,13 +122,6 @@
                    ((fn (x y) (* x y)) a b))))
      6)
 
-    #;(check-true
-     (UNDEFINED-ERROR?
-      (eval450
-       '(bind [a 2]
-              (bind [b 3]
-                    ((fn (x y) (* x y)) a b))))))
-
     (check-equal?
      (eval450
       '(bind [a 2]
@@ -163,16 +156,16 @@
              ((fn (x) (+ x x)) z)))
      8)
     
-    #;(check-equal?
+    (check-equal?
      (eval450
       '((fn (a b) (/ (+ a b) 2)) 12 8))
      10)
     
-    #;(check-equal?
+    (check-equal?
      (eval450
       '(bind [str1 "hello"]
              (bind [str2 "world"]
-                   ((fn (x y) (string-append x " " y)) str1 str2))))
+                   ((fn (x y) (+ x " " y)) str1 str2))))
      "hello world"))
 
    ; ------------------------------------------------------------
@@ -261,13 +254,6 @@
    ; ------------------------------------------------------------
    (test-case
     "Maeda"
-    #;(test-case
-     "Checking eval450 1"
-     (check-equal? (eval450
-                    '(bind [x 1]
-                           (bind [y 2]
-                                 ((fn (x y z) (+ x y z)) 3))))
-                   6))
 
     (test-case
      "Checking eval450 1 - fixed"
@@ -352,8 +338,8 @@
      (eval450 '(bind [x (+ 1 2)] ((fn (x) (+ x (bind [y 3] y))) x)))
      6)
 
-    #;(check-equal?
-     (eval450 '(cons (bind [x 1] x) ((fn (y) (list y)) 2)))
+    (check-equal?
+     (eval450 '(cns (bind [x 1] x) ((fn (y) (li y)) 2)))
      (list 1 2)))
 
     ;; ------------------------------------------------------------
@@ -457,19 +443,7 @@
       (eval450 '( (fn (x y z) (+ x y z)) 5 15 20))
       40)))
 
-   #;(test-case ; copied Payne?
-    "Yang"
-     (test-case
-    "add number to argument"
-    (check-equal? (eval450 '( (fn (y) (+ 2 y)) 10 ) 12)))
-
-   (test-case
-    "add variables with bind"
-    (check-equal? (eval450 '(bind [x 10]
-                                (bind [y 20]
-                                      ( (fn (z) (+ x y z)) 10)))) 40)))
-
-   ;; ------------------------------------------------------------
+    ;; ------------------------------------------------------------
    (test-case
     "Mulaw"
       ;; Example 1: Basic arithmetic with a lambda function
@@ -533,16 +507,9 @@
                                   (f 10))) 12)
     
     ;; Function with internal binding
-    #;(check-equal? (eval450 '((fn (x y) (bind [z (+ x y)]
-                                             (* z 2))) 3 7)) 20))
-
-   #;(test-case
-    "Wiltshire"
-    (test-case
-     (check-equal? (eval450 ` (fn (y) (+ 2 y))10)12))
-    
-    (test-case
-     (check-equal? (eval450 `((fn (x y z) (+ x y z)5 15 20))) 40)))
+    (check-equal? (eval450 '((fn (x y) (bind [z (+ x y)]
+                                             (* z 2))) 3 7))
+                  20))
   ))
 
   

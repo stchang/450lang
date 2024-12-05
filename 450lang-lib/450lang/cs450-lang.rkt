@@ -9,7 +9,7 @@
 
 (define (eval450 p)
   (match p
-    [`(bind/rec ,(and (? symbol?) f) ,e)
+    [`(bind/rec ,(and (? symbol?) f) ,e) ; top-level version of bind/rec
      (INIT-ENV-add! f (run (parse `(bind/rec [,f ,e] ,f))))]
     [_ (run (parse p))]))
 

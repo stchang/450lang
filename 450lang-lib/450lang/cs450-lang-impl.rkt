@@ -302,19 +302,6 @@
     [else #f
     #; (equal? (res->str x) (res->str y))]))
 
-#;(define (450= x y)
-  (cond
-    [(ErrorResult? x) x]
-    [(ErrorResult? y) y]
-    [(or (and (number? x) (number? y))
-         (and (boolean? x) (boolean? y))
-         (and (string? x) (string? y)))
-     (equal? x y)]
-    [(boolean? x) (450= (bool->num x) y)]
-    [(boolean? y) (450= x (bool->num y))]
-    [else #f
-    #; (equal? (res->str x) (res->str y))]))
-
 ;; An Environment (Env) is a List<EnvVal>
 ;; - represents in-scope variables while running a 450jsLang AST
 ;; - ids earlier in the list shadow later ones with the same name
@@ -345,28 +332,14 @@
 (define (env-add/many xs ress env)
   (append (map list xs ress) env))
 
-
-
-
-;; lookup : Var Env -> Result
-#;(define (lookup target-x env)
-  (cond
-    [(empty? env) (undefined-var-err target-x)]
-    [else
-     (match-let
-         ([`((,x ,res) . ,rst-env) env])
-       (if (symbol=? x target-x)
-           res
-           (lookup target-x rst-env)))])    
-  #;(or (and (assoc target-x env)
-           (second (assoc target-x env)))
-      UNDEFINED-ERROR))
-
+;; INIT-ENV
 (require 2htdp/image)
+
 (define (INIT-ENV-show)
   (displayln (INIT-ENV)))
 (define (INIT-ENV-add! x f)
   (INIT-ENV (cons (list x f) (INIT-ENV))))
+
 (define INIT-ENV
   (make-parameter
    `((+ ,450+)
@@ -402,6 +375,7 @@
      [UNDEFINED-ERROR? ,undefined-var-err?]
      [ARITY-ERROR? ,arity-err?]
      [NOT-FN-ERROR? ,not-fn-err?]
+     (fn-result? ,fn-result?)
      )))
 
 
