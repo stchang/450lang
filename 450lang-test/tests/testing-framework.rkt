@@ -10,7 +10,7 @@
 
 (struct exn:fail:contract:dynamic-require exn:fail:contract ())
 
-(define HW-FILE "cs450-lang-impl.rkt")
+(define HW-FILE "../../450lang-lib/450lang/cs450-lang-impl.rkt")
 
 (define-syntax (HW-PROVIDE stx)
   (syntax-parse stx
