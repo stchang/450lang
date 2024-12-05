@@ -397,6 +397,11 @@
      (add-line ,add-line)
      (empty-image ,empty-image)
      (flip-vertical ,flip-vertical)
+     [NaN? ,nan?]
+     [CIRCULAR-ERROR? ,circular-err?]
+     [UNDEFINED-ERROR? ,undefined-var-err?]
+     [ARITY-ERROR? ,arity-err?]
+     [NOT-FN-ERROR? ,not-fn-err?]
      )))
 
 
