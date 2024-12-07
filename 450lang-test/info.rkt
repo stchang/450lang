@@ -10,4 +10,4 @@
 (define pkg-desc "Test suite for \"450lang\".")
 (define pkg-authors '(stchang))
 
-(define version "0.1.0")
+(define version "0.1")

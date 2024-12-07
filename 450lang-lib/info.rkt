@@ -12,4 +12,4 @@
 (define pkg-desc "450Lang: A Programming Language for UMB CS450.")
 (define pkg-authors '(stchang))
 
-(define version "0.1.0")
+(define version "0.1")
