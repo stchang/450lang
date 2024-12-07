@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Example Demonstrating the Bug**
+**Example That Shows the Bug**
 
 **Expected Result**
 
