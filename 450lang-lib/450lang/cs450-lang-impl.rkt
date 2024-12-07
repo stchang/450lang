@@ -288,7 +288,7 @@
     [(findf ErrorResult? args) => (lambda (e) e)]
     ;[(ErrorResult? x) x]
     ;[(ErrorResult? y) y]
-    [(or (andmap number? args)
+    [else #;(or (andmap number? args)
          (andmap boolean? args)
          (andmap string? args))
      (apply equal? args)]
@@ -299,8 +299,7 @@
     ;[(ormap boolean? args) (apply 450= (map bool->num args))]
     ;[(boolean? x) (450= (bool->num x) y)]
     ;[(boolean? y) (450= x (bool->num y))]
-    [else #f
-    #; (equal? (res->str x) (res->str y))]))
+    #;[else (equal? (res->str x) (res->str y))]))
 
 ;; An Environment (Env) is a List<EnvVal>
 ;; - represents in-scope variables while running a 450jsLang AST
@@ -528,3 +527,5 @@
                     (n ? (* n (fac (- n 1))) : 1))]
                (fac ,n)))
    (factorial n)))
+
+(check-true (eval450 '(=== mt (li))))
