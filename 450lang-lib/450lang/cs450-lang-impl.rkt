@@ -417,9 +417,12 @@
 ;      [(sub x y) (450- (run/env x env) (run/env y env))]
 ;      [(eq x y) (450= (run/env x env) (run/env y env))]
       [(ite tst thn els)
-       (if (res->bool (run/env tst env))
-           (run/env thn env)
-           (run/env els env))]
+       (define tst-res (run/env tst env))
+       (if (ErrorResult? tst-res)
+           tst-res
+           (if (res->bool (run/env tst env))
+               (run/env thn env)
+               (run/env els env)))]
       [(fn-ast args body) (fn-result args body env)] ; dont eval body
       [(call fn args)
        (450apply
@@ -529,3 +532,49 @@
    (factorial n)))
 
 (check-true (eval450 '(=== mt (li))))
+
+;; ternary ? should propagate err
+;; issue #2 (h/t Gustavo Aguiar)
+(check-equal?
+ (eval450
+  '(bind/rec
+    [reduce
+     (fn (f y lst)
+         ((empty? lst)
+          ? y
+          : (reduce f (f y (first lst)) (rest lst))))]
+    (reduce + 0 (list 1 2 3 4))))
+ (undefined-var-err 'empty?))
+
+(check-equal?
+ (eval450
+  '(bind/rec
+    [reduce
+     (fn (f y lst)
+         (lst
+          ? (reduce f (f y (first lst)) (rest lst))
+          : y))]
+    (reduce + 0 (list 1 2 3 4))))
+ (undefined-var-err 'list))
+
+(check-equal?
+ (eval450
+  '(bind/rec
+    [reduce
+     (fn (f y lst)
+         (lst
+          ? (reduce f (f y (first lst)) (rest lst))
+          : y))]
+    (reduce + 0 (li 1 2 3 4))))
+ (undefined-var-err 'first))
+
+(check-equal?
+ (eval450
+  '(bind/rec
+    [reduce
+     (fn (f y lst)
+         (lst
+          ? (reduce f (f y (1st lst)) (rest lst))
+          : y))]
+    (reduce + 0 (li 1 2 3 4))))
+ 10)
