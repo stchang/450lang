@@ -1,6 +1,7 @@
 #lang racket
 
 (provide HW-FILE
+         HW-PROVIDE
          (rename-out [450test-case test-case])
          (except-out (all-from-out rackunit) test-case))
 

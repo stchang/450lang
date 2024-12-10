@@ -6,7 +6,11 @@
          fn-result?
          INIT-ENV-add!
          INIT-ENV-show
-         ;NaN ; TODO: don't provide
+         NaN ; TODO: don't provide (but makes testing easier)
+         circular-err
+         undefined-var-err
+         arity-err
+         not-fn-err
          (rename-out [nan? NaN?]
                      [circular-err? CIRCULAR-ERROR?]
                      [undefined-var-err? UNDEFINED-ERROR?]
@@ -391,7 +395,7 @@
            (run/env body (append (map list params args) fnenv))
            ARITY-ERROR)]
       [(? undefined-var-err?) f]
-      [_ NOT-FN-ERROR]))
+      [_ (not-fn-err f)]))
 
      ;; accumulator : env : Env
   ;; invariant : represents variable bindings seen so far
