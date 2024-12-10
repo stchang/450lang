@@ -429,9 +429,12 @@
                (run/env els env)))]
       [(fn-ast args body) (fn-result args body env)] ; dont eval body
       [(call fn args)
-       (450apply
-        (run/env fn env)
-        (map (curryr run/env env) args))]
+       (define fn-res (run/env fn env))
+       (if (ErrorResult? fn-res)
+           fn-res
+           (450apply
+            fn-res
+            (map (curryr run/env env) args)))]
       [(chk=? expected actual)
        (check-equal? (run/env expected env) (run/env actual env))]
       [(chkerr p? err)

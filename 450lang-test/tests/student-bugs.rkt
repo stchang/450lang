@@ -60,9 +60,15 @@
       10))
 
    (test-case
-       "informative not-fn-err"
+       "informative not-fn-err" ; issue #3
      (check-equal? (eval450 '(empty-image))
                    ((HW-PROVIDE not-fn-err) (eval450 'empty-image))))
+
+   (test-case
+       "applying error should short circuit (and not run args)" ; issue #4
+     ;; "1st" contract error should not occur
+     (check-equal? (eval450 '(cond (1st mt)))
+                   ((HW-PROVIDE undefined-var-err) 'cond)))
   ))
 
   
