@@ -230,6 +230,8 @@
 (define (res->num x)
   (cond
     [(number? x) x]
+    [(string? x) (or (string->number x) ; #f for non-string-nums
+                     NaN)]
     [(boolean? x) (bool->num x)]
     [else NaN]))
 
@@ -451,17 +453,22 @@
 
 ;; with js-style coercions: string, number
 
-;;; "adding" strings
-;(check-equal? (eval450 '(+ "hello" " world")) "hello world")
-;
-;;; "adding" strings and numbers
-;(check-equal? (eval450 '(+ 100 "grand")) "100grand")
-;(check-equal? (eval450 '(+ "cs" 450)) "cs450")
-;
-;;; "sub" with any string is NaN
-;(check-equal? (eval450 '(- "hello" "world")) NaN)
-;(check-equal? (eval450 '(- "hello" 100)) NaN)
-;(check-equal? (eval450 '(- 100 "world")) NaN)
+;; "adding" strings
+(check-equal? (eval450 '(+ "hello" " world")) "hello world")
+
+;; "adding" strings and numbers
+(check-equal? (eval450 '(+ 100 "grand")) "100grand")
+(check-equal? (eval450 '(+ "cs" 450)) "cs450")
+
+;; "sub" with string-nums "works", but is NaN for non-string-nums
+(check-equal? (eval450 '(- "3" "1")) 2)
+(check-equal? (eval450 '(- 3 "1")) 2)
+(check-equal? (eval450 '(- "3" 1)) 2)
+
+;; "sub" with non-string-nums NaN
+(check-equal? (eval450 '(- "hello" "world")) NaN)
+(check-equal? (eval450 '(- "hello" 100)) NaN)
+(check-equal? (eval450 '(- 100 "world")) NaN)
 
 
 ;; bind examples

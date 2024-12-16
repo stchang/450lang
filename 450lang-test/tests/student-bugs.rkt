@@ -69,6 +69,11 @@
      ;; "1st" contract error should not occur
      (check-equal? (eval450 '(cond (1st mt)))
                    ((HW-PROVIDE undefined-var-err) 'cond)))
+
+   (test-case
+       "subtraction with string numbers" ; issue #13
+     (check-equal? (eval450 '(- "3" "1")) 2))
+     
   ))
 
   
