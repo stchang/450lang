@@ -38,7 +38,7 @@
      #:with _p (format-id #'nam "parse")
      #:with _r (format-id #'nam "run")
      #:with stx-err? (format-id #'nam "exn:fail:syntax:cs450?")
-     #:with fnres? (format-id #'nam "fn-result?")
+     #:with lmres? (format-id #'nam "lm-result?")
      #:with nan? (format-id #'nam "NaN?")
      #'(ru:test-case nam
                      (with-check-info*
@@ -61,7 +61,7 @@
                                  [circ-err? (HW-PROVIDE CIRCULAR-ERROR?)]
                                  [stx-err? (HW-PROVIDE exn:fail:syntax:cs450?)]
                                  [nan? (HW-PROVIDE NaN?)]
-                                 [fnres? (HW-PROVIDE fn-result?)]
+                                 [lmres? (HW-PROVIDE lm-result?)]
                                  [_p (HW-PROVIDE parse)]
                                  [_r (HW-PROVIDE run)])
                              chk)

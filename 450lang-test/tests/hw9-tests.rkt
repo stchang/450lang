@@ -11,7 +11,7 @@
    "HW9"
    
    #;(test-case
-    "Checking that hw9.rkt file runs and provides expected fns"
+    "Checking that hw9.rkt file runs and provides expected lms"
     (check-not-exn (lambda () (dynamic-require HW-FILE #f)))
 
     (check-true (procedure? (HW9 parse)))

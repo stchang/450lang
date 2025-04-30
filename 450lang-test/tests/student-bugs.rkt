@@ -19,10 +19,10 @@
       (eval450
        '(bind/rec
          [reduce
-          (fn (f y lst)
-            ((empty? lst)
-             ? y
-             : (reduce f (f y (first lst)) (rest lst))))]
+          (lm (f y lst)
+            (iffy (empty? lst)
+             y
+             (reduce f (f y (first lst)) (rest lst))))]
          (reduce + 0 (list 1 2 3 4))))
       ((HW-PROVIDE undefined-var-err) 'empty?))
      
@@ -30,10 +30,10 @@
       (eval450
        '(bind/rec
          [reduce
-          (fn (f y lst)
-            (lst
-             ? (reduce f (f y (first lst)) (rest lst))
-             : y))]
+          (lm (f y lst)
+            (iffy lst
+             (reduce f (f y (first lst)) (rest lst))
+             y))]
          (reduce + 0 (list 1 2 3 4))))
       ((HW-PROVIDE undefined-var-err) 'list))
      
@@ -41,10 +41,10 @@
       (eval450
        '(bind/rec
          [reduce
-          (fn (f y lst)
-            (lst
-           ? (reduce f (f y (first lst)) (rest lst))
-           : y))]
+          (lm (f y lst)
+            (iffy lst
+           (reduce f (f y (first lst)) (rest lst))
+           y))]
          (reduce + 0 (li 1 2 3 4))))
       ((HW-PROVIDE undefined-var-err) 'first))
      
@@ -52,10 +52,10 @@
       (eval450
        '(bind/rec
          [reduce
-          (fn (f y lst)
-            (lst
-             ? (reduce f (f y (1st lst)) (rest lst))
-             : y))]
+          (lm (f y lst)
+            (iffy lst
+             (reduce f (f y (1st lst)) (rest lst))
+             y))]
          (reduce + 0 (li 1 2 3 4))))
       10))
 

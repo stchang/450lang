@@ -18,7 +18,7 @@
     (check-true (procedure? NOT-FN-ERROR?))
     (check-true (procedure? ARITY-ERROR?))
     (check-true (procedure? CIRCULAR-ERROR?))
-    (check-true (procedure? fn-result?))
+    (check-true (procedure? lm-result?))
     (check-true (procedure? exn:fail:syntax:cs450?)))
    
    (test-case
@@ -33,58 +33,58 @@
                                         (+ y (- x))))) 1))
 
    (test-case
-    "lecture 22: fn-result"
-    (check-true (fn-result? (eval450 '(fn (x y) (+ x y))))))
+    "lecture 22: lm-result"
+    (check-true (lm-result? (eval450 '(lm (x y) (+ x y))))))
 
    (test-case
-    "lecture 22: curried fn-result"
-    (check-true (fn-result? (eval450 '(fn (x) (fn (y) (+ x y)))))))
+    "lecture 22: curried lm-result"
+    (check-true (lm-result? (eval450 '(lm (x) (lm (y) (+ x y)))))))
 
    (test-case
-    "lecture 22: fn-result with non-empty env"
-    (check-true (fn-result? (eval450 '(bind [x 10] (fn (y) (+ x y)))))))
+    "lecture 22: lm-result with non-empty env"
+    (check-true (lm-result? (eval450 '(bind [x 10] (lm (y) (+ x y)))))))
 
    (test-case
-    "lecture 22: fn-result with non-empty env applied"
-    (check-equal? (eval450 '( (bind [x 10] (fn (y) (+ x y)))
+    "lecture 22: lm-result with non-empty env applied"
+    (check-equal? (eval450 '( (bind [x 10] (lm (y) (+ x y)))
                              20 ))
                   30))
    
    (test-case
-    "lecture 22: fn applied"
-    (check-equal? (eval450 '((fn (x y) (+ x y))
+    "lecture 22: lm applied"
+    (check-equal? (eval450 '((lm (x y) (+ x y))
                              10 20))
                   30))
 
    (test-case
-    "lecture 22: curried fn applied"
-    (check-equal? (eval450 '(((fn (x) (fn (y) (+ x y)))
+    "lecture 22: curried lm applied"
+    (check-equal? (eval450 '(((lm (x) (lm (y) (+ x y)))
                              10) 20))
                   30))
 
    (test-case
-    "lecture 22: fn app with bind ref"
+    "lecture 22: lm app with bind ref"
     (check-equal? (eval450 '(bind [x 10]
-                                  ( (fn (y) (+ x y))
+                                  ( (lm (y) (+ x y))
                                     20)))
                   30))
 
    (test-case
-    "lecture 22: fn with bind only"
+    "lecture 22: lm with bind only"
     (check-equal? (eval450 '( (bind [x 10]
-                                  (fn (y) (+ x y)))
+                                  (lm (y) (+ x y)))
                               20 ))
     30))
 
    (test-case
     "lecture 22: dynamic scope not supported - should be error"
     (check-true (UNDEFINED-ERROR?
-                 (eval450 '(bind [f (fn (x) (+ x y))] (bind [y 10] (f 11)))))))
+                 (eval450 '(bind [f (lm (x) (+ x y))] (bind [y 10] (f 11)))))))
 
    (test-case
-    "lecture 22: fn parse err"
+    "lecture 22: lm parse err"
     (check-exn exn:fail:syntax:cs450?
-                 (lambda () (eval450 '(bind [f (fn (x))] (f 11))))))
+                 (lambda () (eval450 '(bind [f (lm (x))] (f 11))))))
 
    ; ------------------------------------------------------------
    (test-case
@@ -92,24 +92,24 @@
     
     ;; Nested bind and function application
     (check-equal?
-     (eval450 '(bind [x 1] (bind [y 2] ((fn (z) (+ x y z)) 3)))) 6)
+     (eval450 '(bind [x 1] (bind [y 2] ((lm (z) (+ x y z)) 3)))) 6)
     
-    ;; Passing a fn as an argument
+    ;; Passing a lm as an argument
     (check-equal? 
-     (eval450 '((fn (f x) (f x)) (fn (y) (- y y)) 5))
+     (eval450 '((lm (f x) (f x)) (lm (y) (- y y)) 5))
      0)
     
     ;; Zero arguments function
     (check-equal?
-     (eval450 '((fn() 42))) 42)
+     (eval450 '((lm() 42))) 42)
     
     ;; Function with no body
     (check-exn exn:fail:syntax:cs450? 
-               (λ () (eval450 '((fn (x))))))
+               (λ () (eval450 '((lm (x))))))
     
     ;; Using bind to bind a function
     (check-equal? 
-     (eval450 '(bind [add (fn (x y) (+ x y))] (add 5 10))) 
+     (eval450 '(bind [add (lm (x y) (+ x y))] (add 5 10))) 
      15))
 
    ; ------------------------------------------------------------
@@ -119,32 +119,32 @@
      (eval450
       '(bind [a 2]
              (bind [b 3]
-                   ((fn (x y) (* x y)) a b))))
+                   ((lm (x y) (* x y)) a b))))
      6)
 
     (check-equal?
      (eval450
       '(bind [a 2]
              (bind [b 3]
-                   ((fn (x y) (+ x y)) a b))))
+                   ((lm (x y) (+ x y)) a b))))
      5)
     
     (check-equal?
      (eval450
-      '((fn (f x) (f x))
-        (fn (y) (+ y 10)) 5))
+      '((lm (f x) (f x))
+        (lm (y) (+ y 10)) 5))
      15)
     
     ;; Missing one argument
     (check-true
      (ARITY-ERROR?
       (eval450
-       '((fn (x y) (+ x y)) 10))))
+       '((lm (x y) (+ x y)) 10))))
     
     ;; Function with no parameters
     (check-equal?
      (eval450
-      '((fn () 42)))
+      '((lm () 42)))
      42))
 
    ; ------------------------------------------------------------
@@ -153,19 +153,19 @@
     (check-equal?
      (eval450
       '(bind [z 4]
-             ((fn (x) (+ x x)) z)))
+             ((lm (x) (+ x x)) z)))
      8)
     
     (check-equal?
      (eval450
-      '((fn (a b) (/ (+ a b) 2)) 12 8))
+      '((lm (a b) (/ (+ a b) 2)) 12 8))
      10)
     
     (check-equal?
      (eval450
       '(bind [str1 "hello"]
              (bind [str2 "world"]
-                   ((fn (x y) (+ x " " y)) str1 str2))))
+                   ((lm (x y) (+ x " " y)) str1 str2))))
      "hello world"))
 
    ; ------------------------------------------------------------
@@ -176,7 +176,7 @@
      "Basic function application: adding two numbers"
      (check-equal?
       (eval450
-       '( (fn (x y) (+ x y)) 5 10 ))
+       '( (lm (x y) (+ x y)) 5 10 ))
       15))
 
     ;; Example 2: Using Bind for Variable Scope
@@ -185,7 +185,7 @@
      (check-equal?
       (eval450
        '(bind [z 3]
-              ( (fn (x) (+ z x)) 4 )))
+              ( (lm (x) (+ z x)) 4 )))
       7))
 
     ;; Example 3: Nested Function Application
@@ -193,8 +193,8 @@
      "Nested functions with captured variables"
      (check-equal?
       (eval450
-       '( (fn (x)
-              ( (fn (y) (+ x y)) 8 ))
+       '( (lm (x)
+              ( (lm (y) (+ x y)) 8 ))
           5 ))
       13))
 
@@ -203,7 +203,7 @@
      "Functions that return functions"
      (check-equal?
       (eval450
-       '( ( (fn (x) (fn (y) (+ x y))) 6 ) 7 ))
+       '( ( (lm (x) (lm (y) (+ x y))) 6 ) 7 ))
       13))
 
    ;; Example 5: Combining Bind and Currying
@@ -212,8 +212,8 @@
     (check-equal?
      (eval450
       '(bind [a 2]
-         ( (fn (x)
-              ( (fn (y) (+ (+ a x) y)) 10 ))
+         ( (lm (x)
+              ( (lm (y) (+ (+ a x) y)) 10 ))
            3 )))
      15)))
 
@@ -223,31 +223,31 @@
     (check-equal?
      (eval450
       '(bind [x 100]
-             ( (fn (y) (+ x y)) 50 )))
+             ( (lm (y) (+ x y)) 50 )))
      150)
 
 
     (check-equal?
      (eval450
       '(bind [x 10]
-             ( (fn (y) (+ x y)) -10 )))
+             ( (lm (y) (+ x y)) -10 )))
      0)
 
     (check-equal?
      (eval450
       '(bind [x 5]
-             ( (fn (y) (+ x x y)) 5 )))
+             ( (lm (y) (+ x x y)) 5 )))
      15)
 
     (check-equal?
      (eval450
-      '( (fn (x y z) (+ x y z))
+      '( (lm (x y z) (+ x y z))
          10 20 30) )
      60 )
 
     (check-equal?
      (eval450
-      '( (fn (x y z) (- x y z))
+      '( (lm (x y z) (- x y z))
          5 5 4) )
      -4 ))
 
@@ -260,7 +260,7 @@
      (check-equal? (eval450
                     '(bind [x 1]
                            (bind [y 2]
-                                 ((fn (z) (+ x y z)) 3))))
+                                 ((lm (z) (+ x y z)) 3))))
                    6))
 
     (test-case
@@ -269,7 +269,7 @@
                   (eval450
                    '(bind [x 1]
                           (bind [y 2]
-                                ((fn (x y z) (+ x y z)) 3)))))))
+                                ((lm (x y z) (+ x y z)) 3)))))))
 
     
 
@@ -278,7 +278,7 @@
      (check-equal? (eval450
                     '(bind [x 1]
                            (+ ((bind [x 100]
-                                     (fn (y) (- x y))) 1) x)))
+                                     (lm (y) (- x y))) 1) x)))
                    100))
     
     (test-case
@@ -286,60 +286,60 @@
      (check-equal? (eval450
                     '(bind [a 1]
                            (+ ((bind [x 100]
-                                      (fn (y) (- x y))) 1) 1)))
+                                      (lm (y) (- x y))) 1) 1)))
                    100))
 
     (test-case
      "Checking eval450 4"
      (check-equal? (eval450
                     '(bind [a 1]
-                           ( (fn (x y z) (+ x y z)) 1 2 3)))
+                           ( (lm (x y z) (+ x y z)) 1 2 3)))
                     6))
 
      (test-case
       "Checking eval450 5"
       (check-equal? (eval450
                      '(bind [x 100]
-                            ( (fn (x y z) (+ x y z)) 1 2 3)))
+                            ( (lm (x y z) (+ x y z)) 1 2 3)))
                      6)))
 
    ; ------------------------------------------------------------
    (test-case
     "McQuaw"
     (check-equal?
-     (eval450 '(bind [z 10] ((fn (x y) (+ x y z)) 10 20)))
+     (eval450 '(bind [z 10] ((lm (x y) (+ x y z)) 10 20)))
      40)
 
     (check-exn exn:fail:syntax:cs450?
                (lambda ()
-                 (eval450 '(bind [x 10] (bind [y x] (fn '() (+ x y)))))))
+                 (eval450 '(bind [x 10] (bind [y x] (lm '() (+ x y)))))))
     
     (check-true
-     (fn-result?
-      (eval450 '(bind [x 10] (bind [y x] (fn () (+ x y)))))))
+     (lm-result?
+      (eval450 '(bind [x 10] (bind [y x] (lm () (+ x y)))))))
 
     (check-equal?
-     (eval450 '((bind [x 10] (bind [y x] (fn () (+ x y))))))
+     (eval450 '((bind [x 10] (bind [y x] (lm () (+ x y))))))
      20)
     
     (check-true
-     (fn-result?
-      (eval450 '(bind [x (bind [y 10] 20)] (fn (x) x)))))
+     (lm-result?
+      (eval450 '(bind [x (bind [y 10] 20)] (lm (x) x)))))
 
     (check-equal?
-     (eval450 '(bind [x (bind [y 10] 20)] ((fn (x) x) x)))
+     (eval450 '(bind [x (bind [y 10] 20)] ((lm (x) x) x)))
      20)
 
     (check-true
-     (fn-result?
-      (eval450 '(bind [x (+ 1 2)] (fn (x) (+ x (bind [y 3] y)))))))
+     (lm-result?
+      (eval450 '(bind [x (+ 1 2)] (lm (x) (+ x (bind [y 3] y)))))))
 
     (check-equal?
-     (eval450 '(bind [x (+ 1 2)] ((fn (x) (+ x (bind [y 3] y))) x)))
+     (eval450 '(bind [x (+ 1 2)] ((lm (x) (+ x (bind [y 3] y))) x)))
      6)
 
     (check-equal?
-     (eval450 '(cns (bind [x 1] x) ((fn (y) (li y)) 2)))
+     (eval450 '(cns (bind [x 1] x) ((lm (y) (li y)) 2)))
      (list 1 2)))
 
     ;; ------------------------------------------------------------
@@ -368,7 +368,7 @@
        (eval450
         '(bind [x 3]
                (bind [y 4]
-                     ((fn (z) (fn (w) (+ z w))) x y)))))))
+                     ((lm (z) (lm (w) (+ z w))) x y)))))))
     
     (test-case
      "Checking function call - properly curried"
@@ -376,7 +376,7 @@
       (eval450
        '(bind [x 3]
               (bind [y 4]
-                    (((fn (z) (fn (w) (+ z w))) x) y))))
+                    (((lm (z) (lm (w) (+ z w))) x) y))))
       7)))
 
    ; ------------------------------------------------------------
@@ -384,13 +384,13 @@
     "Payne"
     (test-case
      "add number to argument"
-     (check-equal? (eval450 '( (fn (y) (+ 2 y)) 10 )) 12))
+     (check-equal? (eval450 '( (lm (y) (+ 2 y)) 10 )) 12))
     
     (test-case
      "add variables with bind"
      (check-equal? (eval450 '(bind [x 10]
                                    (bind [y 20]
-                                         ( (fn (z) (+ x y z)) 10)))) 40))
+                                         ( (lm (z) (+ x y z)) 10)))) 40))
 
     #;(test-case
      "subract bind variables - invalid stx"
@@ -398,49 +398,49 @@
       exn:fail:syntax:cs450?
       (lambda ()
        (eval450 '(bind [x 5]
-                       ( fn (y) (- y x)) 10)))))
+                       ( lm (y) (- y x)) 10)))))
     (test-case
      "subract bind variables - invalid stx - ok now (hw13) with multi bodies"
      (check-equal?
       (eval450 '(bind [x 5]
-                      ( fn (y) (- y x))
+                      ( lm (y) (- y x))
                       10))
       10))
 
     (test-case
-     "subract bind variables - fn result"
+     "subract bind variables - lm result"
      (check-true
-      (fn-result?
+      (lm-result?
        (eval450 '(bind [x 5]
-                       ( fn (y) (- y x)))))))
+                       ( lm (y) (- y x)))))))
     
     (test-case
      "subract bind variables"
      (check-equal? (eval450 '(bind [x 5]
-                                   (( fn (y) (- y x)) 10)))
+                                   (( lm (y) (- y x)) 10)))
                    5))
     
     (test-case
      "add 2 arguments - bad stx"
      (check-exn
       exn:fail:syntax:cs450?
-      (lambda () (eval450 '( (fn (x y) (+ x y) 5 -1))))))
+      (lambda () (eval450 '( (lm (x y) (+ x y) 5 -1))))))
 
     (test-case
      "add 2 arguments"
      (check-equal?
-      (eval450 '( (fn (x y) (+ x y))  5 -1))
+      (eval450 '( (lm (x y) (+ x y))  5 -1))
       4))
     
     (test-case
      "add 3 arguments - bad stx"
      (check-exn
       exn:fail:syntax:cs450?
-       (lambda () (eval450 '( (fn (x y z) (+ x y z) 5 15 20))))))
+       (lambda () (eval450 '( (lm (x y z) (+ x y z) 5 15 20))))))
     (test-case
      "add 3 arguments"
      (check-equal?
-      (eval450 '( (fn (x y z) (+ x y z)) 5 15 20))
+      (eval450 '( (lm (x y z) (+ x y z)) 5 15 20))
       40)))
 
     ;; ------------------------------------------------------------
@@ -451,7 +451,7 @@
      "Addition using a lambda function"
      (check-equal?
       (eval450
-       '( (fn (x y) (+ x y)) 5 7 ))
+       '( (lm (x y) (+ x y)) 5 7 ))
       12))
 
    ;; Example 2: Variable binding and scope
@@ -478,7 +478,7 @@
     "Returning a function as a result"
     (check-equal?
      (eval450
-      '(bind [f (fn (x) (+ x 5))]
+      '(bind [f (lm (x) (+ x 5))]
          (f 10)))
      15))
 
@@ -488,26 +488,26 @@
     (check-true
      (ARITY-ERROR?
      (eval450
-      '( (fn (x y) (+ x y)) 5 ))))))
+      '( (lm (x y) (+ x y)) 5 ))))))
 
    (test-case
     "Santiago"
     ;; Simple function with increment 
-    (check-equal? (eval450 '((fn (x) (+ x 1)) 4)) 5)
+    (check-equal? (eval450 '((lm (x) (+ x 1)) 4)) 5)
     
     ;; Function using variable from outer scope
     (check-equal? (eval450 '(bind [x 5]
-                                  ((fn (y) (+ x y)) 3))) 8)
+                                  ((lm (y) (+ x y)) 3))) 8)
     
     ;; Function with multiple parameters
-    (check-equal? (eval450 '((fn (x y z) (+ x y z)) 1 2 3)) 6)
+    (check-equal? (eval450 '((lm (x y z) (+ x y z)) 1 2 3)) 6)
     
     ;; Binding a function to a name
-    (check-equal? (eval450 '(bind [f (fn (x) (+ x 2))]
+    (check-equal? (eval450 '(bind [f (lm (x) (+ x 2))]
                                   (f 10))) 12)
     
     ;; Function with internal binding
-    (check-equal? (eval450 '((fn (x y) (bind [z (+ x y)]
+    (check-equal? (eval450 '((lm (x y) (bind [z (+ x y)]
                                              (* z 2))) 3 7))
                   20))
   ))

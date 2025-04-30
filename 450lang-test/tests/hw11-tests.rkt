@@ -130,32 +130,32 @@
      (test-case
       "+/- with js-style coercions: string, number, and bools"
       ;; "adding" bools
-      (check-equal? (eval450 '(+ TRUE FALSE)) 1)
-      (check-equal? (eval450 '(+ FALSE FALSE)) 0)
-      (check-equal? (eval450 '(+ TRUE TRUE)) 2)
+      (check-equal? (eval450 '(+ TRUE! FALSE!)) 1)
+      (check-equal? (eval450 '(+ FALSE! FALSE!)) 0)
+      (check-equal? (eval450 '(+ TRUE! TRUE!)) 2)
       
       ;; "adding" bools and strings
-      (check-equal? (eval450 '(+ "true" TRUE)) "trueTRUE")
-      (check-equal? (eval450 '(+ TRUE "true")) "TRUEtrue")
-      (check-equal? (eval450 '(+ TRUE "false")) "TRUEfalse")
-      (check-equal? (eval450 '(+ "false" TRUE)) "falseTRUE")
+      (check-equal? (eval450 '(+ "true" TRUE!)) "trueTRUE!")
+      (check-equal? (eval450 '(+ TRUE! "true")) "TRUE!true")
+      (check-equal? (eval450 '(+ TRUE! "false")) "TRUE!false")
+      (check-equal? (eval450 '(+ "false" TRUE!)) "falseTRUE!")
 
       ;; "adding" bools and numbers
-      (check-equal? (eval450 '(+ TRUE 10)) 11)
-      (check-equal? (eval450 '(+ FALSE 10)) 10)
-      (check-equal? (eval450 '(+ -1 FALSE)) -1)
+      (check-equal? (eval450 '(+ TRUE! 10)) 11)
+      (check-equal? (eval450 '(+ FALSE! 10)) 10)
+      (check-equal? (eval450 '(+ -1 FALSE!)) -1)
 
       ;; "minus" bools
-      (check-equal? (eval450 '(- TRUE FALSE)) 1)
-      (check-equal? (eval450 '(- 100 FALSE)) 100)
-      (check-equal? (eval450 '(- FALSE 100)) -100)
+      (check-equal? (eval450 '(- TRUE! FALSE!)) 1)
+      (check-equal? (eval450 '(- 100 FALSE!)) 100)
+      (check-equal? (eval450 '(- FALSE! 100)) -100)
       
       ;; "minus" with anything other than number is NaN
       (check-true (NaN? (eval450 '(- "true" "false"))))
-      (check-true (NaN? (eval450 '(- "true" FALSE))))
+      (check-true (NaN? (eval450 '(- "true" FALSE!))))
       (check-true (NaN? (eval450 '(- "true" 100))))
       (check-true (NaN? (eval450 '(- 100 "true"))))
-      (check-true (NaN? (eval450 '(- TRUE "true")))))
+      (check-true (NaN? (eval450 '(- TRUE! "true")))))
 
 
      (test-case
@@ -164,27 +164,27 @@
       (check-false (eval450 '(=== 11 10)))
       (check-true (eval450 '(=== "hello" (+ "hel" "lo"))))
       (check-false (eval450 '(=== "hello" "world")))
-      (check-false (eval450 '(=== TRUE FALSE)))
-      (check-true (eval450 '(=== FALSE FALSE))))
+      (check-false (eval450 '(=== TRUE! FALSE!)))
+      (check-true (eval450 '(=== FALSE! FALSE!))))
 
      (test-case
       "different types not equal"
       (check-false (eval450 '(=== "hello" 10)))
       (check-false (eval450 '(=== 100 "world")))
-      (check-false (eval450 '(=== TRUE "world")))
-      (check-false (eval450 '(=== "TRUE" TRUE)))
-      (check-false (eval450 '(=== (+ "TR" "UE") TRUE)))
-      (check-false (eval450 '(=== 100 TRUE)))
-      (check-false (eval450 '(=== TRUE 100))))
+      (check-false (eval450 '(=== TRUE! "world")))
+      (check-false (eval450 '(=== "TRUE!" TRUE!)))
+      (check-false (eval450 '(=== (+ "TR" "UE!") TRUE!)))
+      (check-false (eval450 '(=== 100 TRUE!)))
+      (check-false (eval450 '(=== TRUE! 100))))
 
 
      (test-case
       "sort of sane ===" ; all false but true for == (except last)
-      (check-false (eval450 '(=== TRUE 1)))
-      (check-false (eval450 '(=== 1 TRUE)))
-      (check-false (eval450 '(=== 0 FALSE))) 
-      (check-false (eval450 '(=== FALSE 0)))
-      (check-false (eval450 '(=== 0 TRUE))))
+      (check-false (eval450 '(=== TRUE! 1)))
+      (check-false (eval450 '(=== 1 TRUE!)))
+      (check-false (eval450 '(=== 0 FALSE!))) 
+      (check-false (eval450 '(=== FALSE! 0)))
+      (check-false (eval450 '(=== 0 TRUE!))))
 
      (test-case
       "insane ===" ; all false but true for ==
@@ -196,13 +196,14 @@
      (test-case
       "ternary"
       ;; actual true / false
-      (check-equal? (eval450 '((=== 10 10) ? 100 : 200)) 100)
-      (check-equal? (eval450 '((=== 10 11) ? 100 : 200)) 200)
+      (check-equal? (eval450 '(iffy (=== 10 10) 100 200)) 100)
+      (check-equal? (eval450 '(iffy (=== 10 11) 100 200)) 200)
       
       ;; js truthy false
-      (check-equal? (eval450 '((- 100 100) ? 100 : 200)) 200)
-      (check-equal? (eval450 '((- "100" 3) ? 100 : 200)) 200)
-      (check-equal? (eval450 '((+ "" "") ? 100 : 200)) 200))
+      (check-equal? (eval450 '(iffy (- 100 100) 100 200)) 200)
+      (check-equal? (eval450 '(iffy (- "100" 3) 100 200)) 100) ; string nums work
+      (check-equal? (eval450 '(iffy (- "hundy" 3) 100 200)) 200)
+      (check-equal? (eval450 '(iffy (+ "" "") 100 200)) 200))
 
      ;; variable-arity valid in final language
      #;(test-case

@@ -40,18 +40,18 @@
     (check-true (UNDEFINED-ERROR? (eval450 '(lambda (x) (+ x 1))))))
 
    (test-case
-       "fn is fn-result?"
-     (check-true (fn-result?
-                  (eval450 '(fn (x) x)))))
+       "fn is lm-result?"
+     (check-true (lm-result?
+                  (eval450 '(lm (x) x)))))
 
 
    (test-case
        "apply lambda"
-     (check-equal? (eval450 '((fn (x y) (+ x y)) 1 2)) 3))
+     (check-equal? (eval450 '((lm (x y) (+ x y)) 1 2)) 3))
 
    (test-case
        "arity err"
-     (check-true (ARITY-ERROR? (eval450 '((fn (x y) (+ x y)) 1)))))
+     (check-true (ARITY-ERROR? (eval450 '((lm (x y) (+ x y)) 1)))))
 
    (test-case
        "racket fn result"
@@ -74,30 +74,30 @@
 
    (test-case
        "x in-scope should be captured with function def"
-     (check-true (fn-result?
-                  (eval450 '(bind [y 10] (fn (x) (+ x y)))))))
+     (check-true (lm-result?
+                  (eval450 '(bind [y 10] (lm (x) (+ x y)))))))
 
 
    (test-case
-       "fn in bind"
-     (check-equal? (eval450 '((bind [y 10] (fn (x) (+ x y)))
+       "lm in bind"
+     (check-equal? (eval450 '((bind [y 10] (lm (x) (+ x y)))
                                 100))
                    110))
 
    (test-case
-       "different xs for fn and args should not get shadowed"
-     (check-equal? (eval450 '((bind [x 10] (fn (y) (+ x y)))
+       "different xs for lm and args should not get shadowed"
+     (check-equal? (eval450 '((bind [x 10] (lm (y) (+ x y)))
                                 (bind [x 11] x)))
                    21))
 
    (test-case
        "multiple lambdas"
-     (check-equal? (eval450 '(((fn (x) (fn (x) (+ 1 x))) 10) 11)) 12))
+     (check-equal? (eval450 '(((lm (x) (lm (x) (+ 1 x))) 10) 11)) 12))
 
    (test-case
        "second x is shadowed in arg"
      (check-equal? (eval450
-                    '(bind [x 10] ((fn (y) (+ x y)) (bind [x 11] x))))
+                    '(bind [x 10] ((lm (y) (+ x y)) (bind [x 11] x))))
                    21))
 
    (test-case
@@ -105,7 +105,7 @@
      (check-true
       (UNDEFINED-ERROR?
        (eval450
-        '(bind [f (fn (x) (+ x y))] (bind [y 10] (f 11)))))))
+        '(bind [f (lm (x) (+ x y))] (bind [y 10] (f 11)))))))
  
 
    (test-case
@@ -157,14 +157,14 @@
       30 ))
 
    (test-case
-    "basic fn-val tests 1"
+    "basic lm-val tests 1"
 
-     (check-true ( fn-result?
-                  (eval450 '(fn (x y) (+ x y))))))
+     (check-true ( lm-result?
+                  (eval450 '(lm (x y) (+ x y))))))
    (test-case
-    "basic fn-val tests 2"
-     (check-true ( fn-result?
-                  (eval450 '(fn (x) (fn (y) (+ x y)))))))
+    "basic lm-val tests 2"
+     (check-true ( lm-result?
+                  (eval450 '(lm (x) (lm (y) (+ x y)))))))
 
 
    (test-case
@@ -172,7 +172,7 @@
 
     (check-equal? 
      (eval450
-      '((fn (x y) (+ x y)) 
+      '((lm (x y) (+ x y)) 
         10 20))
      30 ))
 
@@ -181,18 +181,18 @@
     (check-equal? 
      (eval450 
       '(bind [x 10] 
-         ((fn (y) (+ x y))
+         ((lm (y) (+ x y))
           20)))
      30 )) ; with bind
 
    (test-case
-    "from Slide: CS450js Lambda full examples: bind the fn only"
+    "from Slide: CS450js Lambda full examples: bind the lm only"
     (check-equal? 
      (eval450
       '((bind [x 10] 
-          (fn (y) (+ x y)))
+          (lm (y) (+ x y)))
         20))
-     30 ) ; bind the fn only
+     30 ) ; bind the lm only
     )
 
    ;; lec24
@@ -200,7 +200,7 @@
     "lecture 24, test 1"
     (check-equal?
      (eval450
-      '( (fn (x y) (+ x y))
+      '( (lm (x y) (+ x y))
          20 20))
      40))
 
@@ -209,7 +209,7 @@
     (check-equal?
      (eval450
       '(bind [x 5]
-             ( (fn (y) (+ x y)) 5 )))
+             ( (lm (y) (+ x y)) 5 )))
      10))
     
       (test-case
@@ -217,7 +217,7 @@
     (check-equal?
      (eval450
       '(bind [x 15]
-             ( (fn (y) (- x y)) 5 )))
+             ( (lm (y) (- x y)) 5 )))
      10))
     
       (test-case
@@ -225,7 +225,7 @@
     (check-equal?
      (eval450
       '(bind [x 100]
-             ( (fn (y) (/ x y)) 25 )))
+             ( (lm (y) (/ x y)) 25 )))
      4))
 
       (test-case
@@ -233,14 +233,14 @@
     (check-equal?
      (eval450
       '(bind [x 20]
-             ( (fn (y) (/ x y)) -5 )))
+             ( (lm (y) (/ x y)) -5 )))
      -4))
 
       (test-case
     "lecture 24, test 6"
     (check-equal?
      (eval450
-      '( (fn (x y) (* x y))
+      '( (lm (x y) (* x y))
          2 4))
      8))
 

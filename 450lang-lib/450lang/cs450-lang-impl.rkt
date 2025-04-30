@@ -3,7 +3,7 @@
 (provide parse
          run
          exn:fail:syntax:cs450?
-         fn-result?
+         lm-result?
          INIT-ENV-add!
          INIT-ENV-show
          NaN ; TODO: don't provide (but makes testing easier)
@@ -26,26 +26,26 @@
 ;; - Variable
 ;; - `(bind [,Var ,Expr] ,Expr)
 ;; - `(bind/rec [,Var ,Expr] ,Expr)
-;; - `(,Expr ? ,Expr : ,Expr)
-;; - `(fn ,List<Var> ,Expr)
+;; - `(iffy ,Expr ,Expr ,Expr)
+;; - `(lm ,List<Var> ,Expr)
 ;; - (cons Expr List<Expr>)
 
 ;; An Atom is one of
 ;; - Number
 ;; - String
-;; - SymBool
+;; - Bool!
 
-;; A SymBool is one of
-;; - 'TRUE
-;; - 'FALSE
+;; A Bool is one of
+;; - 'TRUE!
+;; - 'FALSE!
 
 (define (atom? x)
   (or (number? x) (string? x) (symbool? x)))
 
 (define (symbool? x)
   (and (symbol? x)
-       (or (symbol=? x 'TRUE)
-           (symbol=? x 'FALSE))))
+       (or (symbol=? x 'TRUE!)
+           (symbol=? x 'FALSE!))))
 (define (var? x) (symbol? x))
 (define (Expr? x)
   (or (atom? x)
@@ -77,7 +77,7 @@
 ;; - (bind Symbol AST List<AST>)
 ;; - (recb Symbol AST List<AST>)
 ;; - (call AST List<AST>)
-;; - (fn-ast List<Var> AST)
+;; - (lm-ast List<Var> AST)
 (struct AST () #:transparent)
 (struct num AST [val] #:transparent)
 (struct str AST [val] #:transparent)
@@ -87,7 +87,7 @@
 (struct bind AST [name expr body] #:transparent)
 (struct recb AST [name expr body] #:transparent)
 (struct call AST [fn args] #:transparent)
-(struct fn-ast AST [params body] #:transparent)
+(struct lm-ast AST [params body] #:transparent)
 
 (struct exn:fail:syntax:cs450 exn:fail:syntax [])
 
@@ -102,29 +102,29 @@
   (match s
     [(? number?) (num s)]
     [(? string?) (str s)]
-    ['TRUE (boo true)]
-    ['FALSE (boo false)]
+    ['TRUE! (boo true)]
+    ['FALSE! (boo false)]
     [(? symbol?) (vari s)]
     [`(bind [,x ,e] . ,bods) (bind x (parse e) (map parse bods))]
     [`(bind . ,_)
      (raise-syntax-error
-      'parse "not a valid CS450 Lang program" s
+      'parse "bind: invalid syntax, expected: (bind [x e] body)" s
       #:exn exn:fail:syntax:cs450)]
     [`(bind/rec [,x ,e] . ,bods) (recb x (parse e) (map parse bods))]
     [`(bind/rec . ,_)
      (raise-syntax-error
-      'parse "not a valid CS450 Lang program" s
+      'parse "bind/rec: invalid syntax, expected: (bind/rec [x e] body)" s
       #:exn exn:fail:syntax:cs450)]
 ;    [`(+ ,x ,y) (add (parse x) (parse y))]
 ;    [`(- ,x ,y) (sub (parse x) (parse y))]
 ;    [`(=== ,x ,y) (eq (parse x) (parse y))]
-    [`(,tst ? ,thn : ,els) (ite (parse tst) (parse thn) (parse els))]
-    [`(fn ,(and (list (? symbol?) ...) args) ,body) (fn-ast args (parse body))]
-    #;[`(fn ,(and (list x ...)
-                  (list (? symbol?) ...)) ,body) (fn-ast x (parse body))]
-    [`(fn . ,_)
+    [`(iffy ,tst ,thn ,els) (ite (parse tst) (parse thn) (parse els))]
+    [`(lm ,(and (list (? symbol?) ...) args) ,body) (lm-ast args (parse body))]
+    #;[`(lm ,(and (list x ...)
+                  (list (? symbol?) ...)) ,body) (lm-ast x (parse body))]
+    [`(lm . ,_)
      (raise-syntax-error
-      'parse "not valid CS450 fn syntax" s
+      'parse "invalid lm syntax, expected (lm (x ..) body)" s
       #:exn exn:fail:syntax:cs450)]
     [`(chk= ,e1 ,e2) (chk=? (parse e1) (parse e2))]
     [`(chkerr ,e1 ,e2) (chkerr (parse e1) (parse e2))]
@@ -151,11 +151,11 @@
                    (sub (num 3) (num 4))))
 (check-equal? (parse '(* 1 2))
               (call (vari '*) (list (num 1) (num 2)))) ; unbound vars not parse err
-(check-equal? (parse 'TRUE) (boo true))
-(check-equal? (parse 'FALSE) (boo false))
-(check-equal? (parse '(=== TRUE FALSE))
+(check-equal? (parse 'TRUE!) (boo true))
+(check-equal? (parse 'FALSE!) (boo false))
+(check-equal? (parse '(=== TRUE! FALSE!))
               (call (vari '===) (list (boo true) (boo false))))
-(check-equal? (parse '((=== 10 10) ? 100 : 200))
+(check-equal? (parse '(iffy (=== 10 10) 100 200))
               (ite (call (vari '===) (list (num 10) (num 10)))
                    (num 100)
                    (num 200)))
@@ -197,7 +197,7 @@
 (define NOT-FN-ERROR (not-fn-err 'unknown))
 (define CIRCULAR-ERROR (circular-err 'unknown))
 
-(struct fn-result [params code env] #:transparent)
+(struct lm-result [params code env] #:transparent)
 
 (define (Result? x)
   ((disjoin number?
@@ -206,14 +206,14 @@
             nan?
             ErrorResult?
             procedure?
-            fn-result?
+            lm-result?
             list?
             image?
             void?) ; need void for testing forms
    x))
 
 (define (bool->str b)
-  (if b "TRUE" "FALSE"))
+  (if b "TRUE!" "FALSE!"))
 
 (define (bool->num b)
   (if b 1 0))
@@ -380,7 +380,7 @@
      [UNDEFINED-ERROR? ,undefined-var-err?]
      [ARITY-ERROR? ,arity-err?]
      [NOT-FN-ERROR? ,not-fn-err?]
-     (fn-result? ,fn-result?)
+     (lm-result? ,lm-result?)
      )))
 
 
@@ -392,7 +392,7 @@
   (define (450apply f args)
     (match f
       [(? procedure?) (apply f args)]
-      [(fn-result params body fnenv)
+      [(lm-result params body fnenv)
        (if (= (length params) (length args))
            (run/env body (append (map list params args) fnenv))
            ARITY-ERROR)]
@@ -429,7 +429,7 @@
            (if (res->bool (run/env tst env))
                (run/env thn env)
                (run/env els env)))]
-      [(fn-ast args body) (fn-result args body env)] ; dont eval body
+      [(lm-ast args body) (lm-result args body env)] ; dont eval body
       [(call fn args)
        (define fn-res (run/env fn env))
        (if (ErrorResult? fn-res)
@@ -486,42 +486,42 @@
 ;; check shadowing, proper variable capture
 
 ;; x in-scope should be captured with function def
-(check-equal? (parse '((bind [y 10] (fn (x) (+ x y))) 100))
-              (call (bind 'y (num 10) (list (fn-ast '(x) (call (vari '+) (list (vari 'x) (vari 'y))))))
+(check-equal? (parse '((bind [y 10] (lm (x) (+ x y))) 100))
+              (call (bind 'y (num 10) (list (lm-ast '(x) (call (vari '+) (list (vari 'x) (vari 'y))))))
                    (list (num 100))))
-(check-equal? (eval450 '(bind [y 10] (fn (x) (+ x y))))
-              (fn-result
+(check-equal? (eval450 '(bind [y 10] (lm (x) (+ x y))))
+              (lm-result
                '(x)
                (call (vari '+) (list (vari 'x) (vari 'y)))
                (cons '(y 10) (INIT-ENV))))
-(check-equal? (eval450 '((bind [y 10] (fn (x) (+ x y)))
+(check-equal? (eval450 '((bind [y 10] (lm (x) (+ x y)))
                          100))
               110)
 
 ;; different xs for fn and args should not get shadowed
-(check-equal? (eval450 '((bind [x 10] (fn (y) (+ x y)))
+(check-equal? (eval450 '((bind [x 10] (lm (y) (+ x y)))
                          (bind [x 11] x)))
               21)
 
 ;; multiple lambdas
-(check-equal? (eval450 '(((fn (x) (fn (x) (+ 1 x))) 10) 11)) 12)
+(check-equal? (eval450 '(((lm (x) (lm (x) (+ 1 x))) 10) 11)) 12)
 
 ;; second x is shadowed in arg
-(check-equal? (eval450 '(bind [x 10] ((fn (y) (+ x y)) (bind [x 11] x))))
+(check-equal? (eval450 '(bind [x 10] ((lm (y) (+ x y)) (bind [x 11] x))))
               21)
 
 ;; dynamic scope not supported - should be error
-(check-equal? (eval450 '(bind [f (fn (x) (+ x y))] (bind [y 10] (f 11))))
+(check-equal? (eval450 '(bind [f (lm (x) (+ x y))] (bind [y 10] (f 11))))
               (undefined-var-err 'y))
  
 
 (check-equal? (eval450 '(bind [x 10] (bind [x (+ x 1)] (+ x 2))))
               13)
 
-(check-exn exn:fail:syntax:cs450? (lambda () (parse '(fn (x)))))
-(check-exn exn:fail:syntax:cs450? (lambda () (parse '(fn (1 2) x))))
-(check-exn exn:fail:syntax:cs450? (lambda () (parse '(fn (1) 3))))
-(check-exn exn:fail:syntax:cs450? (lambda () (parse '(fn (x 1) 3))))
+(check-exn exn:fail:syntax:cs450? (lambda () (parse '(lm (x)))))
+(check-exn exn:fail:syntax:cs450? (lambda () (parse '(lm (1 2) x))))
+(check-exn exn:fail:syntax:cs450? (lambda () (parse '(lm (1) 3))))
+(check-exn exn:fail:syntax:cs450? (lambda () (parse '(lm (x 1) 3))))
 
 ;; bind/rec
 
@@ -540,8 +540,8 @@
   (check-equal?
    (eval450
     `(bind/rec [fac
-                (fn (n)
-                    (n ? (* n (fac (- n 1))) : 1))]
+                (lm (n)
+                    (iffy n (* n (fac (- n 1))) 1))]
                (fac ,n)))
    (factorial n)))
 
@@ -553,10 +553,10 @@
  (eval450
   '(bind/rec
     [reduce
-     (fn (f y lst)
-         ((empty? lst)
-          ? y
-          : (reduce f (f y (first lst)) (rest lst))))]
+     (lm (f y lst)
+         (iffy (empty? lst)
+          y
+          (reduce f (f y (first lst)) (rest lst))))]
     (reduce + 0 (list 1 2 3 4))))
  (undefined-var-err 'empty?))
 
@@ -564,10 +564,10 @@
  (eval450
   '(bind/rec
     [reduce
-     (fn (f y lst)
-         (lst
-          ? (reduce f (f y (first lst)) (rest lst))
-          : y))]
+     (lm (f y lst)
+         (iffy lst
+          (reduce f (f y (first lst)) (rest lst))
+          y))]
     (reduce + 0 (list 1 2 3 4))))
  (undefined-var-err 'list))
 
@@ -575,10 +575,10 @@
  (eval450
   '(bind/rec
     [reduce
-     (fn (f y lst)
-         (lst
-          ? (reduce f (f y (first lst)) (rest lst))
-          : y))]
+     (lm (f y lst)
+         (iffy lst
+          (reduce f (f y (first lst)) (rest lst))
+          y))]
     (reduce + 0 (li 1 2 3 4))))
  (undefined-var-err 'first))
 
@@ -586,9 +586,9 @@
  (eval450
   '(bind/rec
     [reduce
-     (fn (f y lst)
-         (lst
-          ? (reduce f (f y (1st lst)) (rest lst))
-          : y))]
+     (lm (f y lst)
+         (iffy lst
+          (reduce f (f y (1st lst)) (rest lst))
+          y))]
     (reduce + 0 (li 1 2 3 4))))
  10)
