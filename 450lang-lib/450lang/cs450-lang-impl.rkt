@@ -286,6 +286,37 @@
          NaN
          (apply - nums))]))
 
+;; 450*: Result ...  -> Result
+(define/contract (450* . args)
+  (-> Result? ... Result?)
+  (cond
+    ;[(findf undefined-var-err? args) => (lambda (e) e)]
+    [(findf ErrorResult? args) => (lambda (e) e)]
+    [else
+     (define nums (map res->num args))
+     (if (ormap nan? nums)
+         NaN
+         (apply * nums))]))
+
+;; 450= : Result ... -> Result
+(define (450loose= . args)
+  (-> Result? ... Result?)
+  (cond
+    [(findf undefined-var-err? args) => (lambda (e) e)]
+    [(findf ErrorResult? args) => (lambda (e) e)]
+    [(ormap nan? args) false]
+    [(or (andmap number? args)
+         (andmap boolean? args)
+         (andmap string? args))
+     (apply equal? args)]
+    [(ormap boolean? args)
+     (apply 450loose=
+            (map
+             (lambda (x) (if (boolean? x) (bool->num x) x))
+             args))]
+    [else
+     (apply equal? (map res->str args))]))
+
 ;; 450= : Result ... -> Result
 (define/contract (450= . args)
   (-> Result? ... Result?)
@@ -350,7 +381,9 @@
    `((+ ,450+)
      (- ,450-)
      (* ,*)
+     (× ,450*)
      (=== ,450=)
+     (~= ,450loose=)
      (++ ,add1)
      (-- ,sub1)
      ;(chk= ,check-equal?) ; cant do this because we dont want errs propagating
