@@ -401,7 +401,7 @@
      (rest ,rest)
      (π ,pi)
      (pi ,pi)
-     (* ,*)
+     ;(* ,450*)
      (/ ,/)
      (cos ,cos)
      (sin ,sin)
