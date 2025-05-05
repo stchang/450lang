@@ -28,6 +28,8 @@
 ;; - `(bind/rec [,Var ,Expr] ,Expr)
 ;; - `(iffy ,Expr ,Expr ,Expr)
 ;; - `(lm ,List<Var> ,Expr)
+;; - `(∨ Expr ...)
+;; - `(∧ Expr ...)
 ;; - (cons Expr List<Expr>)
 
 ;; An Atom is one of
@@ -63,7 +65,9 @@
 ;;           - first Expr should be a predicate
 ;;           - second Expr should be error-producing program
 ;;           test passes if applying predicate to second arg produces true
-;;           This is equiv to rackunit (check-true (expr1 expr2)) 
+;;           This is equiv to rackunit (check-true (expr1 expr2))
+;; - (list 'chk 450Expr)
+;; interp: equiv to check-true
 ;; interp: These are special-case testing forms built into the language
 ;; They must be primitives and not functions because they need to
 ;; bypass the automatic error-propagation of 450Lang
@@ -87,6 +91,8 @@
 (struct bind AST [name expr body] #:transparent)
 (struct recb AST [name expr body] #:transparent)
 (struct call AST [fn args] #:transparent)
+(struct land AST [args] #:transparent)
+(struct lor AST [args] #:transparent)
 (struct lm-ast AST [params body] #:transparent)
 
 (struct exn:fail:syntax:cs450 exn:fail:syntax [])
@@ -94,6 +100,8 @@
 ;; special case testing forms built into the language
 (struct test-form AST [] #:transparent)
 (struct chk=? test-form (expected actual))
+(struct chktrue test-form [test])
+(struct chkfalse test-form [test])
 (struct chkerr test-form (p? err-expr))
 
 ;; parse : Expr -> AST
@@ -115,6 +123,8 @@
      (raise-syntax-error
       'parse "bind/rec: invalid syntax, expected: (bind/rec [x e] body)" s
       #:exn exn:fail:syntax:cs450)]
+    [`(∨ . ,args) (lor (map parse args))]
+    [`(∧ . ,args) (land (map parse args))]
 ;    [`(+ ,x ,y) (add (parse x) (parse y))]
 ;    [`(- ,x ,y) (sub (parse x) (parse y))]
 ;    [`(=== ,x ,y) (eq (parse x) (parse y))]
@@ -127,6 +137,8 @@
       'parse "invalid lm syntax, expected (lm (x ..) body)" s
       #:exn exn:fail:syntax:cs450)]
     [`(chk= ,e1 ,e2) (chk=? (parse e1) (parse e2))]
+    [`(chk ,e) (chktrue (parse e))]
+    [`(chknot ,e) (chkfalse (parse e))]
     [`(chkerr ,e1 ,e2) (chkerr (parse e1) (parse e2))]
     [`(,(or 'chk= 'chkerr) . ,_)
      (raise-syntax-error ; this must be before fn app case
@@ -317,6 +329,17 @@
     [else
      (apply equal? (map res->str args))]))
 
+(define/contract (450not arg)
+  (-> Result? Result?)
+  (not (res->bool arg)))
+
+(define/contract (450abs arg)
+  (-> Result? Result?)
+  (let ([res (res->num arg)])
+    (if (number? res)
+        (abs res)
+        NaN)))
+
 ;; 450= : Result ... -> Result
 (define/contract (450= . args)
   (-> Result? ... Result?)
@@ -380,9 +403,9 @@
   (make-parameter
    `((+ ,450+)
      (- ,450-)
-     (* ,*)
+    ; (* ,*)
      (× ,450*)
-     (=== ,450=)
+     ;(=== ,450=)
      (~= ,450loose=)
      (++ ,add1)
      (-- ,sub1)
@@ -394,20 +417,24 @@
      (<= ,<=)
      (> ,>)
      (>= ,>=)
+     (¬ ,450not)
      (1st ,first)
      (2nd ,second)
-     (3rd ,third)
-     (4th ,fourth)
-     (rest ,rest)
-     (π ,pi)
-     (pi ,pi)
+     ;(3rd ,third)
+     ;(4th ,fourth)
+     (rst ,rest)
+     (len ,length)
+     ;(π ,pi)
+     ;(pi ,pi)
      ;(* ,450*)
-     (/ ,/)
-     (cos ,cos)
-     (sin ,sin)
-     (add-line ,add-line)
-     (empty-image ,empty-image)
-     (flip-vertical ,flip-vertical)
+     ;(/ ,/)
+     (abs ,450abs)
+     ;(cos ,cos)
+     ;(sin ,sin)
+     ;(add-line ,add-line)
+     ;(empty-image ,empty-image)
+     ;(flip-vertical ,flip-vertical)
+     (star ,star)
      [NaN? ,nan?]
      [CIRCULAR-ERROR? ,circular-err?]
      [UNDEFINED-ERROR? ,undefined-var-err?]
@@ -462,6 +489,22 @@
            (if (res->bool (run/env tst env))
                (run/env thn env)
                (run/env els env)))]
+      [(land args)
+       (cond [(empty? args) #t]
+             [(= (length args) 1) (run/env (first args) env)]
+             [else
+              (let ([res (run/env (first args) env)])
+                (if (res->bool res)
+                    (run/env (land (rest args)) env)
+                    res))])]           
+      [(lor args)
+       (cond [(empty? args) #f]
+             [(= (length args) 1) (run/env (first args) env)]
+             [else
+              (let ([res (run/env (first args) env)])
+                (if (res->bool res)
+                    res
+                    (run/env (lor (rest args)) env)))])]           
       [(lm-ast args body) (lm-result args body env)] ; dont eval body
       [(call fn args)
        (define fn-res (run/env fn env))
@@ -472,6 +515,8 @@
             (map (curryr run/env env) args)))]
       [(chk=? expected actual)
        (check-equal? (run/env expected env) (run/env actual env))]
+      [(chktrue tst) (check-true (run/env tst env))]
+      [(chkfalse tst) (check-false (run/env tst env))]
       [(chkerr p? err)
        (check-true ((run/env p? env) (run/env err env)))]
   ))
@@ -574,11 +619,11 @@
    (eval450
     `(bind/rec [fac
                 (lm (n)
-                    (iffy n (* n (fac (- n 1))) 1))]
+                    (iffy n (× n (fac (- n 1))) 1))]
                (fac ,n)))
    (factorial n)))
 
-(check-true (eval450 '(=== mt (li))))
+;(check-true (eval450 '(=== mt (li))))
 
 ;; ternary ? should propagate err
 ;; issue #2 (h/t Gustavo Aguiar)
@@ -589,7 +634,7 @@
      (lm (f y lst)
          (iffy (empty? lst)
           y
-          (reduce f (f y (first lst)) (rest lst))))]
+          (reduce f (f y (first lst)) (rst lst))))]
     (reduce + 0 (list 1 2 3 4))))
  (undefined-var-err 'empty?))
 
@@ -599,7 +644,7 @@
     [reduce
      (lm (f y lst)
          (iffy lst
-          (reduce f (f y (first lst)) (rest lst))
+          (reduce f (f y (first lst)) (rst lst))
           y))]
     (reduce + 0 (list 1 2 3 4))))
  (undefined-var-err 'list))
@@ -610,7 +655,7 @@
     [reduce
      (lm (f y lst)
          (iffy lst
-          (reduce f (f y (first lst)) (rest lst))
+          (reduce f (f y (first lst)) (rst lst))
           y))]
     (reduce + 0 (li 1 2 3 4))))
  (undefined-var-err 'first))
@@ -621,7 +666,7 @@
     [reduce
      (lm (f y lst)
          (iffy lst
-          (reduce f (f y (1st lst)) (rest lst))
+          (reduce f (f y (1st lst)) (rst lst))
           y))]
     (reduce + 0 (li 1 2 3 4))))
  10)

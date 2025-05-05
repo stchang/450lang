@@ -157,8 +157,8 @@
       (check-true (NaN? (eval450 '(- 100 "true"))))
       (check-true (NaN? (eval450 '(- TRUE! "true")))))
 
-
-     (test-case
+     ;; Spring 2025 removed ===
+     #;(test-case
       "sane ==="
       (check-true (eval450 '(=== 10 10)))
       (check-false (eval450 '(=== 11 10)))
@@ -167,7 +167,7 @@
       (check-false (eval450 '(=== TRUE! FALSE!)))
       (check-true (eval450 '(=== FALSE! FALSE!))))
 
-     (test-case
+     #;(test-case
       "different types not equal"
       (check-false (eval450 '(=== "hello" 10)))
       (check-false (eval450 '(=== 100 "world")))
@@ -178,7 +178,7 @@
       (check-false (eval450 '(=== TRUE! 100))))
 
 
-     (test-case
+     #;(test-case
       "sort of sane ===" ; all false but true for == (except last)
       (check-false (eval450 '(=== TRUE! 1)))
       (check-false (eval450 '(=== 1 TRUE!)))
@@ -186,14 +186,14 @@
       (check-false (eval450 '(=== FALSE! 0)))
       (check-false (eval450 '(=== 0 TRUE!))))
 
-     (test-case
+     #;(test-case
       "insane ===" ; all false but true for ==
       (check-false (eval450 '(=== "100" 100)))
       (check-false (eval450 '(=== (+ 10 90) "100")))
       (check-false (eval450 '(=== (+ 10 90) (+ "10" "0")))))
 
 
-     (test-case
+     #;(test-case
       "ternary"
       ;; actual true / false
       (check-equal? (eval450 '(iffy (=== 10 10) 100 200)) 100)
