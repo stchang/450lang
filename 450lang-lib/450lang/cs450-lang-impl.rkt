@@ -12,10 +12,10 @@
          arity-err
          not-fn-err
          (rename-out [nan? NaN?]
-                     [circular-err? CIRCULAR-ERROR?]
-                     [undefined-var-err? UNDEFINED-ERROR?]
-                     [arity-err? ARITY-ERROR?]
-                     [not-fn-err? NOT-FN-ERROR?]))
+                     [circular-err? CIRCULAR-ERR?]
+                     [undefined-var-err? UNDEF-ERR?]
+                     [arity-err? ARITY-ERR?]
+                     [not-fn-err? NOT-FN-ERR?]))
 
 (require rackunit)
 
@@ -436,10 +436,10 @@
      ;(flip-vertical ,flip-vertical)
      (star ,star)
      [NaN? ,nan?]
-     [CIRCULAR-ERROR? ,circular-err?]
-     [UNDEFINED-ERROR? ,undefined-var-err?]
-     [ARITY-ERROR? ,arity-err?]
-     [NOT-FN-ERROR? ,not-fn-err?]
+     [CIRCULAR-ERR? ,circular-err?]
+     [UNDEF-ERR? ,undefined-var-err?]
+     [ARITY-ERR? ,arity-err?]
+     [NOT-FN-ERR? ,not-fn-err?]
      (lm-result? ,lm-result?)
      )))
 

@@ -14,10 +14,10 @@
     (check-true (procedure? parse))
     (check-true (procedure? run))
     (check-true (procedure? NaN?))
-    (check-true (procedure? UNDEFINED-ERROR?))
-    (check-true (procedure? NOT-FN-ERROR?))
-    (check-true (procedure? ARITY-ERROR?))
-    (check-true (procedure? CIRCULAR-ERROR?))
+    (check-true (procedure? UNDEF-ERR?))
+    (check-true (procedure? NOT-FN-ERR?))
+    (check-true (procedure? ARITY-ERR?))
+    (check-true (procedure? CIRCULAR-ERR?))
     (check-true (procedure? lm-result?))
     (check-true (procedure? exn:fail:syntax:cs450?)))
    
@@ -78,7 +78,7 @@
 
    (test-case
     "lecture 22: dynamic scope not supported - should be error"
-    (check-true (UNDEFINED-ERROR?
+    (check-true (UNDEF-ERR?
                  (eval450 '(bind [f (lm (x) (+ x y))] (bind [y 10] (f 11)))))))
 
    (test-case
@@ -137,7 +137,7 @@
     
     ;; Missing one argument
     (check-true
-     (ARITY-ERROR?
+     (ARITY-ERR?
       (eval450
        '((lm (x y) (+ x y)) 10))))
     
@@ -265,7 +265,7 @@
 
     (test-case
      "Checking eval450 1 err"
-     (check-true (ARITY-ERROR?
+     (check-true (ARITY-ERR?
                   (eval450
                    '(bind [x 1]
                           (bind [y 2]
@@ -364,7 +364,7 @@
     (test-case
      "Checking function call - should be curried but not"
      (check-true
-      (ARITY-ERROR?
+      (ARITY-ERR?
        (eval450
         '(bind [x 3]
                (bind [y 4]
@@ -486,7 +486,7 @@
    (test-case
     "Testing function arity error"
     (check-true
-     (ARITY-ERROR?
+     (ARITY-ERR?
      (eval450
       '( (lm (x y) (+ x y)) 5 ))))))
 

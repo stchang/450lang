@@ -31,10 +31,10 @@
     [(_ nam chk ...)
      #:with stx2 #'chks
      #:with eval450 (format-id #'nam "eval450")
-     #:with undef-err? (format-id #'nam "UNDEFINED-ERROR?")
-     #:with not-fn-err? (format-id #'nam "NOT-FN-ERROR?")
-     #:with arity-err? (format-id #'nam "ARITY-ERROR?")
-     #:with circ-err? (format-id #'nam "CIRCULAR-ERROR?")
+     #:with undef-err? (format-id #'nam "UNDEF-ERR?")
+     #:with not-fn-err? (format-id #'nam "NOT-FN-ERR?")
+     #:with arity-err? (format-id #'nam "ARITY-ERR?")
+     #:with circ-err? (format-id #'nam "CIRCULAR-ERR?")
      #:with _p (format-id #'nam "parse")
      #:with _r (format-id #'nam "run")
      #:with stx-err? (format-id #'nam "exn:fail:syntax:cs450?")
@@ -55,10 +55,10 @@
                                (lambda (e)
                                  (fail (exn-message e)))])
                            (let ([eval450 (compose (HW-PROVIDE run) (HW-PROVIDE parse))]
-                                 [undef-err? (HW-PROVIDE UNDEFINED-ERROR?)]
-                                 [not-fn-err? (HW-PROVIDE NOT-FN-ERROR?)]
-                                 [arity-err? (HW-PROVIDE ARITY-ERROR?)]
-                                 [circ-err? (HW-PROVIDE CIRCULAR-ERROR?)]
+                                 [undef-err? (HW-PROVIDE UNDEF-ERR?)]
+                                 [not-fn-err? (HW-PROVIDE NOT-FN-ERR?)]
+                                 [arity-err? (HW-PROVIDE ARITY-ERR?)]
+                                 [circ-err? (HW-PROVIDE CIRCULAR-ERR?)]
                                  [stx-err? (HW-PROVIDE exn:fail:syntax:cs450?)]
                                  [nan? (HW-PROVIDE NaN?)]
                                  [lmres? (HW-PROVIDE lm-result?)]

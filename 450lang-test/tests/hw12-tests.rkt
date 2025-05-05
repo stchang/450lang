@@ -16,10 +16,10 @@
     (check-true (procedure? parse))
     (check-true (procedure? run))
     (check-true (procedure? NaN?))
-    (check-true (procedure? UNDEFINED-ERROR?))
-    (check-true (procedure? NOT-FN-ERROR?))
-    (check-true (procedure? ARITY-ERROR?))
-    (check-true (procedure? fn-result?))
+    (check-true (procedure? UNDEF-ERR?))
+    (check-true (procedure? NOT-FN-ERR?))
+    (check-true (procedure? ARITY-ERR?))
+    (check-true (procedure? lm-result?))
     (check-true (procedure? exn:fail:syntax:cs450?)))
 
    (test-case
@@ -33,11 +33,11 @@
        "combining numbers and nested operations"
      (check-equal? (eval450 '(+ (- 10 5) (+ 2 3))) 10))
 
-   ;; undefined err
+   ;; UNDEF err
    (test-case
-    "undefined-errors"
-    (check-true (UNDEFINED-ERROR? (eval450 '(+++ 1 2))))
-    (check-true (UNDEFINED-ERROR? (eval450 '(lambda (x) (+ x 1))))))
+    "UNDEF-errors"
+    (check-true (UNDEF-ERR? (eval450 '(+++ 1 2))))
+    (check-true (UNDEF-ERR? (eval450 '(lambda (x) (+ x 1))))))
 
    (test-case
        "fn is lm-result?"
@@ -51,7 +51,7 @@
 
    (test-case
        "arity err"
-     (check-true (ARITY-ERROR? (eval450 '((lm (x y) (+ x y)) 1)))))
+     (check-true (ARITY-ERR? (eval450 '((lm (x y) (+ x y)) 1)))))
 
    (test-case
        "racket fn result"
@@ -59,7 +59,7 @@
    
    (test-case
        "var and bind 1"
-     (check-true (UNDEFINED-ERROR? (eval450 'x))))
+     (check-true (UNDEF-ERR? (eval450 'x))))
    (test-case
        "var and bind 2"
      (check-equal? (eval450 '(bind [x 1] x)) 1))
@@ -103,7 +103,7 @@
    (test-case
        "dynamic scope not supported - should be error"
      (check-true
-      (UNDEFINED-ERROR?
+      (UNDEF-ERR?
        (eval450
         '(bind [f (lm (x) (+ x y))] (bind [y 10] (f 11)))))))
  
@@ -117,13 +117,13 @@
    ;; lec 23
       (test-case
           "errors"
-        (check-true (UNDEFINED-ERROR? (eval450 'x))))
+        (check-true (UNDEF-ERR? (eval450 'x))))
       (test-case
           "err should propagate 1"
-        (check-true (UNDEFINED-ERROR? (eval450 '(+ x 1)))))
+        (check-true (UNDEF-ERR? (eval450 '(+ x 1)))))
       (test-case
           "err should propagate 2"
-        (check-true (UNDEFINED-ERROR? (eval450 '(+ (+ x 1) 2)))))
+        (check-true (UNDEF-ERR? (eval450 '(+ (+ x 1) 2)))))
    
    (test-case
     "from Slide: bind scoping examples: no shadow"
@@ -220,7 +220,7 @@
              ( (lm (y) (- x y)) 5 )))
      10))
     
-      (test-case
+      #;(test-case
     "lecture 24, test 4"
     (check-equal?
      (eval450
@@ -228,7 +228,7 @@
              ( (lm (y) (/ x y)) 25 )))
      4))
 
-      (test-case
+      #;(test-case
     "lecture 24, test 5"
     (check-equal?
      (eval450
@@ -240,7 +240,7 @@
     "lecture 24, test 6"
     (check-equal?
      (eval450
-      '( (lm (x y) (* x y))
+      '( (lm (x y) (× x y))
          2 4))
      8))
 

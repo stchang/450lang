@@ -214,7 +214,7 @@
      ;; bind and var tests (no fn)
      (test-case
       "var and bind 1"
-      (check-true (UNDEFINED-ERROR? (eval450 'x))))
+      (check-true (UNDEF-ERR? (eval450 'x))))
      (test-case
       "var and bind 2"
       (check-equal? (eval450 '(bind [x 1] x)) 1))
@@ -233,13 +233,13 @@
      ;; err tests
      (test-case
       "errors"
-        (check-true (UNDEFINED-ERROR? (eval450 'x))))
+        (check-true (UNDEF-ERR? (eval450 'x))))
       (test-case
           "err should propagate 1"
-        (check-true (UNDEFINED-ERROR? (eval450 '(+ x 1)))))
+        (check-true (UNDEF-ERR? (eval450 '(+ x 1)))))
       (test-case
           "err should propagate 2"
-        (check-true (UNDEFINED-ERROR? (eval450 '(+ (+ x 1) 2)))))
+        (check-true (UNDEF-ERR? (eval450 '(+ (+ x 1) 2)))))
 
          (test-case
     "from Slide: bind scoping examples: no shadow"
