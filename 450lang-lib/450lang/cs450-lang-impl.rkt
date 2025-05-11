@@ -373,7 +373,10 @@
 ;; looks up the given var in the given env
 ;; unbound vars result in (undefined-err x)
 (define (lookup x env)
-  (or (and (assoc x env)
+  (if (assoc x env)
+      (envval->result (second (assoc x env)))
+      (undefined-var-err x))
+  #;(or (and (assoc x env)
            (envval->result (second (assoc x env))))
       (undefined-var-err x)))
 
