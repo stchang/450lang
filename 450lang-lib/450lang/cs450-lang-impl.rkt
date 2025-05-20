@@ -242,8 +242,10 @@
 (define (res->num x)
   (cond
     [(number? x) x]
-    [(string? x) (or (string->number x) ; #f for non-string-nums
-                     NaN)]
+    [(string? x)
+     (or (string->number x) ; #f for non-string-nums
+         (and (string=? "" (string-trim x)) 0) ; whitespace = 0
+         NaN)]
     [(boolean? x) (bool->num x)]
     [else NaN]))
 
@@ -327,7 +329,7 @@
              (lambda (x) (if (boolean? x) (bool->num x) x))
              args))]
     [else
-     (apply equal? (map res->str args))]))
+     (apply equal? (map res->num args))]))
 
 (define/contract (450not arg)
   (-> Result? Result?)
