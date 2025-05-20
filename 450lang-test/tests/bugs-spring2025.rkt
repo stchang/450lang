@@ -28,7 +28,7 @@
     (check-equal? (eval450 '(× "  " 0)) 0))
 
    (test-case
-    "decimals"
+    "~= with decimals, issue #26"
     (check-true (eval450 '(~= 5 "5.0")))
     (check-true (eval450 '(~= (bind [x (+ 2 3)] x) (+ "5" ".0")))))
 

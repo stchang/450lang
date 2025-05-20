@@ -321,7 +321,8 @@
     [(ormap nan? args) false]
     [(or (andmap number? args)
          (andmap boolean? args)
-         (andmap string? args))
+         (andmap string? args)
+         (andmap list? args))
      (apply equal? args)]
     [(ormap boolean? args)
      (apply 450loose=
@@ -330,9 +331,8 @@
              args))]
     [else
      (define num-results (map res->num args))
-     (if (ormap nan? num-results)
-         NaN
-         (apply = num-results))]))
+     (and (not (ormap nan? num-results))
+          (apply = num-results))]))
 
 (define/contract (450not arg)
   (-> Result? Result?)
