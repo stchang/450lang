@@ -87,6 +87,6 @@
   ))
 
   
-(module+ main
+(module+ test
   (require rackunit/text-ui)
   (run-tests TESTS 'verbose))

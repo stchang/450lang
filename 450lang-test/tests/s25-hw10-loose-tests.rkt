@@ -141,6 +141,6 @@
 
    )) ; only place where closing parens allowed on separate line!
   
-(module+ main
+(module+ test
   (require rackunit/text-ui)
   (run-tests TESTS 'verbose))

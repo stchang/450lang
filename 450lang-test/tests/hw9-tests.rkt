@@ -129,6 +129,6 @@
       (check-true (NaN? (eval450 '(+ 200 (- 100 "world"))))))
 ))
 
-(module+ main
+(module+ test
   (require rackunit/text-ui)
   (run-tests TESTS 'verbose))
