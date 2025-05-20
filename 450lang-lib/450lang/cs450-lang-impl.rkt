@@ -329,7 +329,10 @@
              (lambda (x) (if (boolean? x) (bool->num x) x))
              args))]
     [else
-     (apply equal? (map res->num args))]))
+     (define num-results (map res->num args))
+     (if (ormap nan? num-results)
+         NaN
+         (apply = num-results))]))
 
 (define/contract (450not arg)
   (-> Result? Result?)

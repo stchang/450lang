@@ -22,6 +22,17 @@
     (check-true (eval450 '(~= "" 0)))
     (check-true (eval450 '(~= "  " 0))))
 
+   (test-case
+    "multiply by whitespace, issue #24"
+    (check-equal? (eval450 '(× "" 0)) 0)
+    (check-equal? (eval450 '(× "  " 0)) 0))
+
+   (test-case
+    "decimals"
+    (check-true (eval450 '(~= 5 "5.0")))
+    (check-true (eval450 '(~= (bind [x (+ 2 3)] x) (+ "5" ".0")))))
+
+
   ))
 
   
