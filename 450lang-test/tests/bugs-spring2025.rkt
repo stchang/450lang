@@ -49,6 +49,32 @@
    (test-case
     "list->str coercion should insert commas, issue #33"
     (check-equal? (eval450 '(+ "x" (li 1 2))) "x1,2"))
+
+   (test-case
+    "mt -> 0, issue #35"
+    (check-equal? (eval450 '(+ mt 1)) "1")
+    (check-equal? (eval450 '(× mt 5)) 0)
+    (check-equal? (eval450 '(- mt 3)) -3))
+
+   (test-case
+    "~= with mt"
+    ;; wrong, but want this behavior for now, for backwards compat
+    (check-true (eval450 '(~= mt mt)))
+    (check-equal? (eval450 '(iffy mt 1 2)) 2)
+
+    ;; correct behavior, issue #40, #43
+    (check-true (eval450 '(~= mt FALSE!)))
+    (check-true (eval450 '(~= FALSE! ""))))
+
+   (test-case
+    "+ with all mt, issue #41"
+    (check-equal? (eval450 '(+ mt mt)) empty))
+
+   (test-case
+    "+ as list / string append, issue #42, #44, #46"
+    (check-equal? (eval450 '(+ mt "Hello")) "Hello")
+    (check-equal? (eval450 '(+ "a" (li 1 2 3 4))) "a1,2,3,4")
+    (check-equal? (eval450 '(+ TRUE! (li 2 4))) "TRUE!2,4"))
   ))
 
   
