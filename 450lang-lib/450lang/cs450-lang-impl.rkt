@@ -236,6 +236,7 @@
     [(string? x) x]
     [(boolean? x) (bool->str x)]
     [(nan? x) "NaN"]
+    [(list? x) (string-join (map res->str x))]
     [else (~a x)]))
 
 ;; 450LangResult -> Number or NaN
@@ -271,8 +272,11 @@
     [(findf ErrorResult? args) => (lambda (e) e)]
 ;    [(ErrorResult? x) x]
 ;    [(ErrorResult? y) y]
+    ;; strings get priority
     [(ormap string? args) (apply string-append (map res->str args))]
     [(andmap list? args) (apply append args)]
+    [(ormap list? args) ; mixed list, convert to str
+     (apply string-append (map res->str args))]
     ;[(or (string? x) (string? y)) (string-append (res->str x) (res->str y))]
     [else
      (define nums (map res->num args))

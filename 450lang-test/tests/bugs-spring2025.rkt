@@ -32,6 +32,9 @@
     (check-true (eval450 '(~= 5 "5.0")))
     (check-true (eval450 '(~= (bind [x (+ 2 3)] x) (+ "5" ".0")))))
 
+   (test-case
+    "+ with mixed lists"
+    (check-equal? (eval450 '(+ 1 mt)) "1"))
 
   ))
 
