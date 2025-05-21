@@ -42,6 +42,13 @@
     (check-equal? (eval450 '(-- (li 4))) 3)
     (check-true (NaN? (eval450 '(-- (li 2 3))))))
 
+   (test-case
+    "circular error, issue #32"
+    (check-true (CIRCULAR-ERR? (eval450 '(bind/rec [x x] x)))))
+
+   (test-case
+    "list->str coercion should insert commas, issue #33"
+    (check-equal? (eval450 '(+ "x" (li 1 2))) "x1,2"))
   ))
 
   

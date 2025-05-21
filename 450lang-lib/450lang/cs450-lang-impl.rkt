@@ -236,7 +236,7 @@
     [(string? x) x]
     [(boolean? x) (bool->str x)]
     [(nan? x) "NaN"]
-    [(list? x) (string-join (map res->str x))]
+    [(list? x) (string-join (map res->str x) ",")]
     [else (~a x)]))
 
 ;; 450LangResult -> Number or NaN
