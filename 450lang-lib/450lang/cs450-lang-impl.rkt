@@ -248,6 +248,13 @@
          (and (string=? "" (string-trim x)) 0) ; whitespace = 0
          NaN)]
     [(boolean? x) (bool->num x)]
+    [(list? x)
+     ;; lists convert to NaN except:
+     ;; - empty -> 0
+     ;; - singleton lists -> first element, eg [1] -> 1
+     (cond [(empty? x) 0]
+           [(= 1 (length x)) (first x)]
+           [else NaN])]
     [else NaN]))
 
 ;; Result -> bool
@@ -419,8 +426,8 @@
      (× ,450*)
      ;(=== ,450=)
      (~= ,450loose=)
-     (++ ,add1)
-     (-- ,sub1)
+     (++ ,(lambda (x) (450+ x 1)))
+     (-- ,(lambda (x) (450- x 1)))
      ;(chk= ,check-equal?) ; cant do this because we dont want errs propagating
      (cns ,cons)
      (mt ,empty)

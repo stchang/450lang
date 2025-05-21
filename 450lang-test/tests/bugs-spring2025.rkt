@@ -33,8 +33,14 @@
     (check-true (eval450 '(~= (bind [x (+ 2 3)] x) (+ "5" ".0")))))
 
    (test-case
-    "+ with mixed lists"
+    "+ with mixed lists, issue #29"
     (check-equal? (eval450 '(+ 1 mt)) "1"))
+
+   (test-case
+    "add1 and sub1 should follow JS semantics, issue #30"
+    (check-equal? (eval450 '(-- mt)) -1)
+    (check-equal? (eval450 '(-- (li 4))) 3)
+    (check-true (NaN? (eval450 '(-- (li 2 3))))))
 
   ))
 
